@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        canvas {
+            border: 1px black solid;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="id-canvas" width="1000" height="500"></canvas>
+</body>
+
+</html>
+
+<script>
+
+    let log = console.log.bind(console)
+
+    // 根据路径加载图片
+    let loadImage = function (path) {
+        let img = new Image()
+        img.src = path
+        return img
+    }
+
+    // 返回一个板子对象
+    let Paddle = function (path, x, y, speed) {
+        this.image = loadImage(path)
+        this.x = x
+        this.y = y
+        this.speed = speed
+        this.moveLeft = function () {
+            this.x -= this.speed
+        }
+        this.moveRight = function () {
+            this.x += this.speed
+        }
+        this.collide = function (ball) {
+            if (ball.y + ball.image.height >= this.y) {
+                if(ball.x >= this.x && ball.x + ball.image.width <= this.x + this.image.width)
+                {
+                    return true
+                }
+            }
+            return false
+        }
+    }
+
+    // 球
+    let Ball = function (path, x, y, speedX, speedY) {
+        this.image = loadImage(path)
+        this.x = x
+        this.y = y
+        this.speedX = speedX
+        this.speedY = speedY
+        this.fired = false
+
+        this.fire = function () {
+            this.fired = true
+        }
+        this.move = function () {
+            if (this.fired) {
+                if (this.x < 0 || this.x > 1000 - this.image.width) {
+                    this.speedX *= -1
+                }
+                if (this.y < 0 || this.y > 500 - this.image.height) {
+                    this.speedY *= -1
+                }
+
+                this.x += this.speedX
+                this.y += this.speedY
+            }
+        }
+        this.rebound = function () {
+            this.speedY *= -1
+        }
+
+    }
+
+    let Game = function () {
+        let canvas = document.querySelector('#id-canvas')
+        let ctx = canvas.getContext('2d')
+        let g = {
+            canvas: canvas,
+            ctx: ctx,
+            // 要被注册的操作
+            actions: {},
+            // 记录被按下的键
+            keydowns: {},
+        }
+        g.registerAction = function (key, callback) {
+            g.actions[key] = callback
+        }
+        g.drawImage = function (obj) {
+            g.ctx.drawImage(obj.image, obj.x, obj.y)
+        }
+
+        // 注册事件
+        window.addEventListener('keydown', function (event) {
+            g.keydowns[event.key] = true
+        })
+        window.addEventListener('keyup', function (event) {
+            g.keydowns[event.key] = false
+        })
+
+
+        // 移动图片
+        setInterval(function () {
+            // 调用注册的函数
+            let keys = Object.keys(g.actions)
+            for (const key of keys) {
+                if (g.keydowns[key]) {
+                    log('execute anction')
+                    // 如果按键被按下, 就调用对应的函数
+                    g.actions[key]()
+                }
+            }
+            // update
+            g.update()
+            // clear
+            g.ctx.clearRect(0, 0, canvas.width, canvas.height)
+            // draw
+            g.draw()
+        }, 1000 / 60);
+
+        return g
+    }
+
+    let _main = function () {
+
+        let x = 100
+        let y = 390
+        let speed = 15
+
+        let game = Game()
+        // 构造一个板子
+        let paddle = new Paddle('paddle.jpg', x, y, speed)
+        let ball = new Ball('ball.jpg', x, y - 100, 5, 5)
+        // 注册操作
+        game.registerAction('a', function () {
+            paddle.moveLeft()
+        })
+        game.registerAction('d', function () {
+            paddle.moveRight()
+        })
+        game.registerAction('f', function () {
+            ball.fire()
+        })
+
+
+        game.update = function () {
+            ball.move()
+            // 判断是否相撞
+            if (paddle.collide(ball)) {
+                // 反弹
+                ball.rebound()
+            }
+        }
+
+        game.draw = function () {
+            game.drawImage(paddle)
+            game.drawImage(ball)
+        }
+    }
+
+    _main()
+</script>
