@@ -35,16 +35,27 @@
         this.x = x
         this.y = y
         this.speed = speed
+
+        // 限定板子不能移出边界
+        this.move = function (x) {
+            if (x <= 0) {
+                x = 0
+            }
+            else if (x + this.image.width >= 1000) {
+                x = 1000 - this.image.width
+            }
+            this.x = x
+        }
+
         this.moveLeft = function () {
-            this.x -= this.speed
+            this.move(this.x - this.speed)
         }
         this.moveRight = function () {
-            this.x += this.speed
+            this.move(this.x + this.speed)
         }
         this.collide = function (ball) {
             if (ball.y + ball.image.height >= this.y) {
-                if(ball.x >= this.x && ball.x + ball.image.width <= this.x + this.image.width)
-                {
+                if (ball.x >= this.x && ball.x + ball.image.width <= this.x + this.image.width) {
                     return true
                 }
             }
@@ -81,6 +92,36 @@
             this.speedY *= -1
         }
 
+    }
+
+    // b在a里面
+    let rectNested = function (a, b) {
+        if (b.x >= a.x && b.x <= a.x + a.image.width) {
+            if (b.y >= a.y && b.y <= a.y + a.image.height) {
+                return true
+            }
+        }
+        return false
+    }
+
+    // 砖块
+    let Block = function (path, x, y) {
+        this.image = loadImage(path)
+        this.x = x
+        this.y = y
+        this.w = this.image.width
+        this.h = this.image.height
+        // 是否被打掉
+        this.alive = true
+
+        this.kill = function () {
+            this.alive = false
+        }
+
+        this.collide = function (ball) {
+            return this.alive &&
+                (rectNested(this, ball) || rectNested(ball, this))
+        }
     }
 
     let Game = function () {
@@ -141,7 +182,15 @@
         let game = Game()
         // 构造一个板子
         let paddle = new Paddle('paddle.jpg', x, y, speed)
-        let ball = new Ball('ball.jpg', x, y - 100, 5, 5)
+        let ball = new Ball('ball.jpg', x, y - 100, 4, 4)
+        // 5个砖块
+        let blocks = []
+        let numOfBlocks = 8
+        for (let i = 0; i < numOfBlocks; i++) {
+            let x = 120 * i
+            let b = new Block('block.jpg', x, 100)
+            blocks.push(b)
+        }
         // 注册操作
         game.registerAction('a', function () {
             paddle.moveLeft()
@@ -156,16 +205,30 @@
 
         game.update = function () {
             ball.move()
-            // 判断是否相撞
+            // 判断板子和球是否相撞
             if (paddle.collide(ball)) {
                 // 反弹
                 ball.rebound()
+            }
+            // 判断球和砖块是否相撞
+            for (let i = 0; i < numOfBlocks; i++) {
+                let b = blocks[i]
+                if (b.collide(ball)) {
+                    b.kill()
+                    ball.rebound()
+                }
             }
         }
 
         game.draw = function () {
             game.drawImage(paddle)
             game.drawImage(ball)
+            for (let i = 0; i < numOfBlocks; i++) {
+                let b = blocks[i]
+                if (b.alive) {
+                    game.drawImage(b)
+                }
+            }
         }
     }
 
