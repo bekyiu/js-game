@@ -10,6 +10,12 @@
             border: 1px black solid;
         }
     </style>
+    <script src="./game.js"></script>
+    <script src="./ball.js"></script>
+    <script src="./block.js"></script>
+    <script src="./paddle.js"></script>
+    <script src="./utils.js"></script>
+    <script src="./level.js"></script>
 </head>
 
 <body>
@@ -20,177 +26,30 @@
 
 <script>
 
-    let log = console.log.bind(console)
-
-    // 根据路径加载图片
-    let loadImage = function (path) {
-        let img = new Image()
-        img.src = path
-        return img
+    // 加载关卡
+    let loadLevel = function (n) {
+        n--
+        let blockPos = level[n]
+        let blocks = []
+        for (let i = 0; i < blockPos.length; i++) {
+            const pos = blockPos[i];
+            let b = new Block('block.jpg', pos[0], pos[1])
+            blocks.push(b)
+        }
+        return blocks
     }
-
-    // 返回一个板子对象
-    let Paddle = function (path, x, y, speed) {
-        this.image = loadImage(path)
-        this.x = x
-        this.y = y
-        this.speed = speed
-
-        // 限定板子不能移出边界
-        this.move = function (x) {
-            if (x <= 0) {
-                x = 0
-            }
-            else if (x + this.image.width >= 1000) {
-                x = 1000 - this.image.width
-            }
-            this.x = x
-        }
-
-        this.moveLeft = function () {
-            this.move(this.x - this.speed)
-        }
-        this.moveRight = function () {
-            this.move(this.x + this.speed)
-        }
-        this.collide = function (ball) {
-            if (ball.y + ball.image.height >= this.y) {
-                if (ball.x >= this.x && ball.x + ball.image.width <= this.x + this.image.width) {
-                    return true
-                }
-            }
-            return false
-        }
-    }
-
-    // 球
-    let Ball = function (path, x, y, speedX, speedY) {
-        this.image = loadImage(path)
-        this.x = x
-        this.y = y
-        this.speedX = speedX
-        this.speedY = speedY
-        this.fired = false
-
-        this.fire = function () {
-            this.fired = true
-        }
-        this.move = function () {
-            if (this.fired) {
-                if (this.x < 0 || this.x > 1000 - this.image.width) {
-                    this.speedX *= -1
-                }
-                if (this.y < 0 || this.y > 500 - this.image.height) {
-                    this.speedY *= -1
-                }
-
-                this.x += this.speedX
-                this.y += this.speedY
-            }
-        }
-        this.rebound = function () {
-            this.speedY *= -1
-        }
-
-    }
-
-    // b在a里面
-    let rectNested = function (a, b) {
-        if (b.x >= a.x && b.x <= a.x + a.image.width) {
-            if (b.y >= a.y && b.y <= a.y + a.image.height) {
-                return true
-            }
-        }
-        return false
-    }
-
-    // 砖块
-    let Block = function (path, x, y) {
-        this.image = loadImage(path)
-        this.x = x
-        this.y = y
-        this.w = this.image.width
-        this.h = this.image.height
-        // 是否被打掉
-        this.alive = true
-
-        this.kill = function () {
-            this.alive = false
-        }
-
-        this.collide = function (ball) {
-            return this.alive &&
-                (rectNested(this, ball) || rectNested(ball, this))
-        }
-    }
-
-    let Game = function () {
-        let canvas = document.querySelector('#id-canvas')
-        let ctx = canvas.getContext('2d')
-        let g = {
-            canvas: canvas,
-            ctx: ctx,
-            // 要被注册的操作
-            actions: {},
-            // 记录被按下的键
-            keydowns: {},
-        }
-        g.registerAction = function (key, callback) {
-            g.actions[key] = callback
-        }
-        g.drawImage = function (obj) {
-            g.ctx.drawImage(obj.image, obj.x, obj.y)
-        }
-
-        // 注册事件
-        window.addEventListener('keydown', function (event) {
-            g.keydowns[event.key] = true
-        })
-        window.addEventListener('keyup', function (event) {
-            g.keydowns[event.key] = false
-        })
-
-
-        // 移动图片
-        setInterval(function () {
-            // 调用注册的函数
-            let keys = Object.keys(g.actions)
-            for (const key of keys) {
-                if (g.keydowns[key]) {
-                    log('execute anction')
-                    // 如果按键被按下, 就调用对应的函数
-                    g.actions[key]()
-                }
-            }
-            // update
-            g.update()
-            // clear
-            g.ctx.clearRect(0, 0, canvas.width, canvas.height)
-            // draw
-            g.draw()
-        }, 1000 / 60);
-
-        return g
-    }
-
     let _main = function () {
 
         let x = 100
         let y = 390
         let speed = 15
 
-        let game = Game()
+        let game = Game(60)
         // 构造一个板子
         let paddle = new Paddle('paddle.jpg', x, y, speed)
         let ball = new Ball('ball.jpg', x, y - 100, 4, 4)
-        // 5个砖块
-        let blocks = []
-        let numOfBlocks = 8
-        for (let i = 0; i < numOfBlocks; i++) {
-            let x = 120 * i
-            let b = new Block('block.jpg', x, 100)
-            blocks.push(b)
-        }
+        // 加载第一关
+        let blocks = loadLevel(1)
         // 注册操作
         game.registerAction('a', function () {
             paddle.moveLeft()
@@ -202,8 +61,23 @@
             ball.fire()
         })
 
+        // 暂停功能
+        let paused = false
+        window.addEventListener('keydown', function (event) {
+            let k = event.key
+            if (k === 'p') {
+                paused = !paused
+                log('暂停/启动')
+            } else if ('12345'.includes(k)) {
+                log(`载入第${k}关`)
+                blocks = loadLevel(k)
+            }
+        })
 
         game.update = function () {
+            if (paused) {
+                return
+            }
             ball.move()
             // 判断板子和球是否相撞
             if (paddle.collide(ball)) {
@@ -211,7 +85,7 @@
                 ball.rebound()
             }
             // 判断球和砖块是否相撞
-            for (let i = 0; i < numOfBlocks; i++) {
+            for (let i = 0; i < blocks.length; i++) {
                 let b = blocks[i]
                 if (b.collide(ball)) {
                     b.kill()
@@ -223,7 +97,7 @@
         game.draw = function () {
             game.drawImage(paddle)
             game.drawImage(ball)
-            for (let i = 0; i < numOfBlocks; i++) {
+            for (let i = 0; i < blocks.length; i++) {
                 let b = blocks[i]
                 if (b.alive) {
                     game.drawImage(b)
