@@ -1,5 +1,5 @@
 // 砖块
-let Block = function (path, x, y) {
+let Block = function (path, x, y, hp) {
     this.image = loadImage(path)
     this.x = x
     this.y = y
@@ -7,9 +7,13 @@ let Block = function (path, x, y) {
     this.h = this.image.height
     // 是否活着
     this.alive = true
+    this.hp = hp || 1
 
-    this.kill = function () {
-        this.alive = false
+    this.hit = function () {
+        this.hp--
+        if (this.hp === 0) {
+            this.alive = false
+        }
     }
 
     this.collide = function (ball) {

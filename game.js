@@ -25,8 +25,9 @@ let Game = function (fps) {
     })
 
 
+    window.fps = fps
     // 移动图片
-    setInterval(function () {
+    let runloop = function() {
         // 调用注册的函数
         let keys = Object.keys(g.actions)
         for (const key of keys) {
@@ -42,7 +43,11 @@ let Game = function (fps) {
         g.ctx.clearRect(0, 0, canvas.width, canvas.height)
         // draw
         g.draw()
-    }, 1000 / fps);
+    }
+    setTimeout(function run () {
+        runloop()
+        setTimeout(run, 1000 / window.fps)
+    }, 1000 / window.fps);
 
     return g
 }
