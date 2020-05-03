@@ -1,10 +1,8 @@
 // 砖块
-let Block = function (path, x, y, hp) {
-    this.image = loadImage(path)
+let Block = function (game, x, y, hp) {
+    this.image = game.getImgByName('block')
     this.x = x
     this.y = y
-    this.w = this.image.width
-    this.h = this.image.height
     // 是否活着
     this.alive = true
     this.hp = hp || 1

@@ -1,6 +1,6 @@
 // 返回一个板子对象
-let Paddle = function (path, x, y, speed) {
-    this.image = loadImage(path)
+let Paddle = function (game, x, y, speed) {
+    this.image = game.getImgByName('paddle')
     this.x = x
     this.y = y
     this.speed = speed
@@ -10,8 +10,8 @@ let Paddle = function (path, x, y, speed) {
         if (x <= 0) {
             x = 0
         }
-        else if (x + this.image.width >= 1000) {
-            x = 1000 - this.image.width
+        else if (x + this.image.w >= 1000) {
+            x = 1000 - this.image.w
         }
         this.x = x
     }
@@ -23,8 +23,8 @@ let Paddle = function (path, x, y, speed) {
         this.move(this.x + this.speed)
     }
     this.collide = function (ball) {
-        if (ball.y + ball.image.height >= this.y) {
-            if (ball.x >= this.x && ball.x + ball.image.width <= this.x + this.image.width) {
+        if (ball.y + ball.image.h >= this.y) {
+            if (ball.x >= this.x && ball.x + ball.image.w <= this.x + this.image.w) {
                 return true
             }
         }
