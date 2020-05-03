@@ -53,10 +53,9 @@ let Game = function (fps, images, callback) {
             // 存入
             g.images[key] = img
             loads.push(1)
-            log(img)
+            log(`载入图片${img.src}`)
             if(loads.length == Object.keys(images).length)
             {
-                log('sb')
                 exec()
             }
         }

@@ -27,4 +27,12 @@ let Ball = function (game, x, y, speedX, speedY) {
         this.speedY *= -1
     }
 
+    // 给定坐标是否位于球中
+    this.hasPoint = function(x, y){
+        let xIn = x >= this.x && x <= this.x + this.image.w
+        let yIn = y >= this.y && y <= this.y + this.image.h
+
+        return xIn && yIn
+    }
+
 }
