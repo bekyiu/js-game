@@ -49,12 +49,14 @@ let _main = function () {
         paddle: './img/paddle.jpg',
     }
 
-    let game = Game(60, images, function (game) {
+    let game = new Game(60, images, function (game) {
 
         let scene = new SceneTitle(game)
         game.runWithScene(scene)
 
     })
+
+    enableDebugMode(true, this.blocks, game)
 
 }
 
