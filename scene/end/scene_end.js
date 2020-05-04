@@ -8,11 +8,16 @@ let SceneEnd = function (game, score) {
 
     this.draw = function () {
         game.ctx.font = "30px serif"
-        game.ctx.fillText(`game over, 你的得分是${score}`, 100, 300)
+        game.ctx.fillText(`game over, 你的得分是${score}, 按r重新开始`, 100, 300)
 
     }
 
     this.update = function () {
     }
+
+    game.registerAction('r', function () {
+        let s = new Scene(game)
+        game.replaceScene(s)
+    })
 
 }

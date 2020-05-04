@@ -44,14 +44,14 @@ let enableDebugMode = function (enable, blocks, game) {
 let _main = function () {
 
     let images = {
-        ball: './ball.jpg',
-        block: './block.jpg',
-        paddle: './paddle.jpg',
+        ball: './img/ball.jpg',
+        block: './img/block.jpg',
+        paddle: './img/paddle.jpg',
     }
 
     let game = Game(60, images, function (game) {
 
-        let scene = new Scene(game)
+        let scene = new SceneTitle(game)
         game.runWithScene(scene)
 
     })
