@@ -11,7 +11,7 @@ let loadLevel = function (n, game) {
     return blocks
 }
 
-let paused = false
+window.paused = false
 
 let enableDebugMode = function (enable, blocks, game) {
     if (!enable) {
@@ -21,7 +21,7 @@ let enableDebugMode = function (enable, blocks, game) {
     window.addEventListener('keydown', function (event) {
         let k = event.key
         if (k === 'p') {
-            paused = !paused
+            window.paused = !window.paused
             log('暂停/启动')
         } else if ('12345'.includes(k)) {
             log(`载入第${k}关`)
@@ -43,11 +43,6 @@ let enableDebugMode = function (enable, blocks, game) {
 
 let _main = function () {
 
-    let x = 100
-    let y = 390
-    let speed = 15
-    let score = 0
-
     let images = {
         ball: './ball.jpg',
         block: './block.jpg',
@@ -55,88 +50,10 @@ let _main = function () {
     }
 
     let game = Game(60, images, function (game) {
-        // 构造一个板子
-        let paddle = new Paddle(game, x, y, speed)
-        let ball = new Ball(game, x, y - 100, 4, 4)
-        // 加载第一关
-        let blocks = loadLevel(1, game)
-        // 注册操作
-        game.registerAction('a', function () {
-            paddle.moveLeft()
-        })
-        game.registerAction('d', function () {
-            paddle.moveRight()
-        })
-        game.registerAction('f', function () {
-            ball.fire()
-        })
 
-        enableDebugMode(true, blocks, game)
+        let scene = new Scene(game)
+        game.runWithScene(scene)
 
-        game.update = function () {
-            if (paused) {
-                return
-            }
-            ball.move()
-            // 判断板子和球是否相撞
-            if (paddle.collide(ball)) {
-                // 反弹
-                ball.rebound()
-            }
-            // 判断球和砖块是否相撞
-            for (let i = 0; i < blocks.length; i++) {
-                let b = blocks[i]
-                if (b.collide(ball)) {
-                    b.hit()
-                    ball.rebound()
-                    if (!b.alive) {
-                        score += 100
-                    }
-                }
-            }
-        }
-
-        game.draw = function () {
-            game.drawImage(paddle)
-            game.drawImage(ball)
-            for (let i = 0; i < blocks.length; i++) {
-                let b = blocks[i]
-                if (b.alive) {
-                    game.drawImage(b)
-                }
-            }
-            game.ctx.font = "20px serif"
-            game.ctx.fillText(`score: ${score}`, 10, 480)
-        }
-
-
-        // 拖拽小球
-        let drag = false
-        let ox = 0, oy = 0
-        game.canvas.addEventListener('mousedown', function (event) {
-            let x = event.offsetX
-            let y = event.offsetY
-            if (ball.hasPoint(x, y)) {
-                ox = x - ball.x
-                oy = y - ball.y
-                drag = true
-            }
-        })
-        game.canvas.addEventListener('mousemove', function (event) {
-            let x = event.offsetX
-            let y = event.offsetY
-            
-            if(drag)
-            {
-                // 减去ox, oy仅仅是为了让拖拽的体验更好
-                // 可以直接赋值为x, y
-                ball.x = x - ox
-                ball.y = y - oy
-            }
-        })
-        game.canvas.addEventListener('mouseup', function (event) {
-            drag = false
-        })
     })
 
 }

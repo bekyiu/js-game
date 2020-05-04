@@ -8,6 +8,8 @@ let Game = function (fps, images, callback) {
     let g = {
         canvas: canvas,
         ctx: ctx,
+        // 当前显示的场景
+        scene: null,
         // 要被注册的操作
         actions: {},
         // 记录被按下的键
@@ -21,7 +23,6 @@ let Game = function (fps, images, callback) {
     g.drawImage = function (obj) {
         g.ctx.drawImage(obj.image.image, obj.x, obj.y)
     }
-
     g.getImgByName = function(name) {
         let img = g.images[name]
         let image = {
@@ -30,6 +31,25 @@ let Game = function (fps, images, callback) {
             image: img,
         }
         return image
+    }
+
+    // update和draw的都应该是某一个场景, 而不是具体的内容
+    // 想要替换游戏展示的内容时, 只要替换场景即可
+    g.update = function() {
+        g.scene.update()
+    }
+    g.draw = function() {
+        g.scene.draw()
+    }
+    g.runWithScene = function (scene) {
+        g.scene = scene
+        setTimeout(function run () {
+            runloop()
+            setTimeout(run, 1000 / window.fps)
+        }, 1000 / window.fps);
+    }
+    g.replaceScene = function (scene) {  
+        g.scene = scene
     }
 
     // 注册事件
@@ -56,7 +76,8 @@ let Game = function (fps, images, callback) {
             log(`载入图片${img.src}`)
             if(loads.length == Object.keys(images).length)
             {
-                exec()
+                // 加载完所有图片后开始运行游戏
+                _start()
             }
         }
     }
@@ -82,13 +103,8 @@ let Game = function (fps, images, callback) {
         g.draw()
     }
 
-    let exec = function() {
+    let _start = function() {
         callback(g)
-        setTimeout(function run () {
-            runloop()
-            setTimeout(run, 1000 / window.fps)
-        }, 1000 / window.fps);
     }
-
     return g
 }
