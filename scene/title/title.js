@@ -1,11 +1,6 @@
 class SceneTitle extends BaseScene {
     constructor(game) {
         super(game)
-        // 按k开始游戏
-        game.registerAction('k', function () {
-            let s = new Scene(game)
-            game.replaceScene(s)
-        })
     }
 
     draw() {

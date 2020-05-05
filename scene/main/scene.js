@@ -9,7 +9,7 @@ class Scene extends BaseScene {
         this.paddle = new Paddle(game, 100, 390, 15)
         this.ball = new Ball(game, 100, 390 - 100, 4, 4)
         // 加载第一关
-        this.blocks = loadLevel(1, game)
+        this.blocks = this.loadLevel(1)
 
         game.registerAction('a', () => {
             this.paddle.moveLeft()
@@ -24,7 +24,7 @@ class Scene extends BaseScene {
         // 拖拽小球
         let drag = false
         let ox = 0, oy = 0
-        game.canvas.addEventListener('mousedown',  (event) => {
+        game.canvas.addEventListener('mousedown', (event) => {
             let x = event.offsetX
             let y = event.offsetY
             if (this.ball.hasPoint(x, y)) {
@@ -46,6 +46,15 @@ class Scene extends BaseScene {
         })
         game.canvas.addEventListener('mouseup', (event) => {
             drag = false
+        })
+
+        // 载入关卡
+        window.addEventListener('keydown', (event) => {
+            let k = event.key
+            if ('12345'.includes(k)) {
+                log(`载入第${k}关`)
+                this.blocks = this.loadLevel(Number(k))
+            }
         })
     }
 
@@ -70,7 +79,7 @@ class Scene extends BaseScene {
         this.ball.move()
         // 判断是否游戏结束
         if (this.ball.y >= this.paddle.y) {
-            let end = new SceneEnd(this.game,this. score)
+            let end = new SceneEnd(this.game, this.score)
             this.game.replaceScene(end)
             return
         }
@@ -90,5 +99,18 @@ class Scene extends BaseScene {
                 }
             }
         }
+    }
+
+    // 加载关卡
+    loadLevel(n) {
+        n--
+        let blockPos = level[n]
+        let blocks = []
+        for (let i = 0; i < blockPos.length; i++) {
+            const pos = blockPos[i];
+            let b = new Block(this.game, pos[0], pos[1], pos[2])
+            blocks.push(b)
+        }
+        return blocks
     }
 }

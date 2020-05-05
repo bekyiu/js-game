@@ -1,6 +1,5 @@
 class Game {
     /**
-     * 
      * @param {*} fps 每秒刷新多少次 
      * @param {*} images 一个对象, key是图片的引用, value是图片的路径
      * @param {*} callback game初始化好之后的回调
@@ -108,5 +107,25 @@ class Game {
 
     _start() {
         this.callback(this)
+    }
+
+    enableDebugMode(enable) {
+        if (!enable) {
+            return
+        }
+        // 暂停功能
+        window.addEventListener('keydown', function (event) {
+            let k = event.key
+            if (k === 'p') {
+                window.paused = !window.paused
+                log('暂停/启动')
+            }
+        })
+
+        document.querySelector('#id-input-speed').addEventListener('input', function (event) {
+            let curFps = Number(event.target.value) + 1
+            window.fps = curFps
+            log(`fps调整为${curFps}`)
+        })
     }
 }

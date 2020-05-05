@@ -5,10 +5,6 @@ class SceneEnd extends BaseScene {
     constructor(game, score) {
         super(game)
         this.score = score
-        game.registerAction('r', function () {
-            let s = new Scene(game)
-            game.replaceScene(s)
-        })
     }
 
     draw() {
